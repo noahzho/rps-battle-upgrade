@@ -90,7 +90,6 @@ class Agent {
       return
     }
 
-    // If there still is no target, move away
     const speed = this.target ? 2 : -1
 
     if (!this.target) {
@@ -105,42 +104,41 @@ class Agent {
     const dy = this.target.y - this.y
     const distance = Math.sqrt(dx * dx + dy * dy)
 
-    // Calculate the angle between the agent and the target point
     const angle = Math.atan2(dy, dx)
-
-    // Calculate the x and y components of the movement vector
     const vx = speed * Math.cos(angle)
     const vy = speed * Math.sin(angle)
 
-    // Move the agent towards the target point
     const newX = this.x + vx
     const newY = this.y + vy
 
-    // Check for collisions
+    let collided = false
+
     for (const agent of agents) {
-      if (
-        agent !== this &&
-        Math.abs(agent.x - newX) < 30 &&
-        Math.abs(agent.y - newY) < 30
-      ) {
+      if (agent !== this && Math.abs(agent.x - newX) < 30 && Math.abs(agent.y - newY) < 30) {
         if (agent.canAttack(this.type)) {
-          // Pause for a second when two objects collide
-          this.isPaused = true
-          setTimeout(() => {
-            this.type = agent.type
-            this.isPaused = false
-          }, 1000)
+          collided = true
+          if (!this.isPaused) {
+            console.log(`Collision detected between ${this.type} and ${agent.type}. Pausing for 1 second.`)
+            this.isPaused = true
+            setTimeout(() => {
+              console.log(`Resuming movement for ${this.type}.`)
+              this.type = agent.type
+              this.isPaused = false
+            }, 1000)
+          }
         }
-        return
+        break
       }
     }
 
-    if (newX < width && newX > 0) {
-      this.x = newX
-    }
+    if (!collided) {
+      if (newX < width && newX > 0) {
+        this.x = newX
+      }
 
-    if (newY < height && newY > 0) {
-      this.y = newY
+      if (newY < height && newY > 0) {
+        this.y = newY
+      }
     }
   }
 }
